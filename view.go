@@ -3,15 +3,14 @@ package main
 import (
     "os"
     "bufio"
-    "container/list"
 )
 
 type View struct {
     width, height int
 
     mode Mode
-    lines *list.List
-    lcursor Cursor
+    file string
+    lines Lines
     tracks []Track
     tcursor Cursor
 
@@ -26,11 +25,10 @@ func NewView(file string, w, h int) (*View, error) {
     }
     defer f.Close()
 
-    lines := list.New()
+    lines := NewLines()
     scanner := bufio.NewScanner(f)
     for scanner.Scan() {
-        ln := Line{ lines.Len(), scanner.Text() }
-        lines.PushBack(ln)
+        lines.PushLine(scanner.Text())
     }
 
     tracks := make([]Track, h)
@@ -38,7 +36,7 @@ func NewView(file string, w, h int) (*View, error) {
         tracks[i] = NewTrack(w)
     }
 
-    v := View{ w, h, ModeNormal, lines, Cursor{ 0, 0 }, tracks, Cursor{ 0, 0 }, make(chan Req), make(chan Res) }
+    v := View{ w, h, ModeNormal, file, lines, tracks, Cursor{ 0, 0 }, make(chan Req), make(chan Res) }
     return &v, nil
 }
 
@@ -53,27 +51,13 @@ func (v *View) Start() {
 }
 
 func (v *View) UpdateTracks() {
-    linenum := v.lcursor.y
+    v.lines.FillTracks(v.tracks[:v.height - 1])
+    v.UpdateStatusBar()
+}
 
-    // skip to linenum
-    ln := v.lines.Front()
-    for i := 0; i < linenum; i++ {
-        ln = ln.Next()
-    }
+func (v *View) UpdateStatusBar() {
+    track := v.tracks[v.height - 1]
 
-    trknum := 0
-    for trknum < v.height {
-        line := ln.Value.(Line)
-        trknum += line.FillTracks(v.tracks[trknum:])
-
-        ln = ln.Next()
-        if ln == nil {
-            break
-        }
-    }
-
-    for trknum < v.height {
-        v.tracks[trknum].Clear()
-        trknum++
-    }
+    track.FillAt(string(v.mode), 1)
+    track.FillAt(v.file, 8)
 }

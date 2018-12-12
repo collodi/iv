@@ -16,17 +16,21 @@ func (t *Track) Len() int {
     return len(t.text)
 }
 
-func (t *Track) Assign(s string, idx int) {
+func (t *Track) Fill(s string) {
+    t.FillAt(s, 0)
+}
+
+func (t *Track) FillAt(s string, idx int) {
     i := 0
     runes := []rune(s)
 
-    for i < len(t.text) && idx + i < len(s) {
-        t.text[i] = runes[idx + i]
+    for idx + i < len(t.text) && i < len(s) {
+        t.text[idx + i] = runes[i]
         i++
     }
 
-    for i < len(t.text) {
-        t.text[i] = ' '
+    for idx + i < len(t.text) {
+        t.text[idx + i] = ' '
         i++
     }
 }
