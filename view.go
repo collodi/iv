@@ -3,6 +3,7 @@ package main
 import (
     "os"
     "bufio"
+    "github.com/gdamore/tcell"
 )
 
 type View struct {
@@ -56,9 +57,10 @@ func (v *View) UpdateTracks() {
 
 func (v *View) UpdateStatusBar() {
     track := v.tracks[v.height - 1]
+    bold := tcell.StyleDefault.Bold(true)
 
-    track.FillAt(string(v.mode), 1)
-    track.FillAt(v.file, 8)
+    track.FillAt(string(v.mode), 1, 0)
+    track.FillAt(v.file, 8, bold)
 }
 
 func (v *View) TrackCursor() Cursor {

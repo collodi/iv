@@ -3,11 +3,13 @@ package main
 import (
     "fmt"
     "container/list"
+    "github.com/gdamore/tcell"
 )
 
 type Line struct {
     num int
     text string
+    style StyleList
 }
 
 func (ln *Line) Len() int {
@@ -19,10 +21,12 @@ func (ln *Line) FillTracks(lnw int, tracks []Track) int {
     idx := 0
     trknum := 0
 
-    tracks[trknum].Fill(fmt.Sprintf("%*d", lnw - 1, ln.num))
+    linenum := fmt.Sprintf("%*d", lnw - 1, ln.num)
+    bold := tcell.StyleDefault.Bold(true)
 
+    tracks[trknum].Fill(linenum, bold)
     for trknum < len(tracks) {
-        tracks[trknum].FillAt(ln.text[idx:], lnw)
+        tracks[trknum].FillAt(ln.text[idx:], lnw, 0)
         idx += tracks[trknum].Len()
 
         trknum++
@@ -40,11 +44,11 @@ type Lines struct {
 }
 
 func NewLines() Lines {
-    return Lines{ list.New(), 3, Cursor{ 0, 0 } }
+    return Lines{ list.New(), 0, Cursor{ 0, 0 } }
 }
 
 func (lns *Lines) PushLine(line string) {
-    ln := Line{ lns.v.Len() + 1, line }
+    ln := Line{ lns.v.Len() + 1, line, NewStyleList() }
     lns.v.PushBack(ln)
     lns.lnw = len(string(ln.num)) + 2
 }

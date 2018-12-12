@@ -6,21 +6,22 @@ import (
 
 type Track struct {
     text []rune
+    style StyleList
 }
 
 func NewTrack(w int) Track {
-    return Track{ make([]rune, w) }
+    return Track{ make([]rune, w), NewStyleList() }
 }
 
 func (t *Track) Len() int {
     return len(t.text)
 }
 
-func (t *Track) Fill(s string) {
-    t.FillAt(s, 0)
+func (t *Track) Fill(s string, style tcell.Style) {
+    t.FillAt(s, 0, style)
 }
 
-func (t *Track) FillAt(s string, idx int) {
+func (t *Track) FillAt(s string, idx int, style tcell.Style) {
     i := 0
     runes := []rune(s)
 
@@ -29,6 +30,7 @@ func (t *Track) FillAt(s string, idx int) {
         i++
     }
 
+    t.style.PushBack(idx, i, style)
     for idx + i < len(t.text) {
         t.text[idx + i] = ' '
         i++
@@ -36,8 +38,9 @@ func (t *Track) FillAt(s string, idx int) {
 }
 
 func (t *Track) Render(screen tcell.Screen, y int) {
+    st := t.style.Iterate()
     for x := 0; x < t.Len(); x++ {
-        screen.SetContent(x, y, t.text[x], nil, tcell.StyleDefault)
+        screen.SetContent(x, y, t.text[x], nil, st.Step())
     }
 }
 
