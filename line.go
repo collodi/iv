@@ -22,7 +22,7 @@ func (ln *Line) FillTracks(lnw int, tracks []Track) int {
     tracks[trknum].Fill(fmt.Sprintf("%*d", lnw - 1, ln.num))
 
     for trknum < len(tracks) {
-        tracks[trknum].FillAt(ln.text[idx:], lnw + 1)
+        tracks[trknum].FillAt(ln.text[idx:], lnw)
         idx += tracks[trknum].Len()
 
         trknum++

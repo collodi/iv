@@ -12,7 +12,6 @@ type View struct {
     file string
     lines Lines
     tracks []Track
-    tcursor Cursor
 
     to chan Req
     from chan Res
@@ -36,7 +35,7 @@ func NewView(file string, w, h int) (*View, error) {
         tracks[i] = NewTrack(w)
     }
 
-    v := View{ w, h, ModeNormal, file, lines, tracks, Cursor{ 0, 0 }, make(chan Req), make(chan Res) }
+    v := View{ w, h, ModeNormal, file, lines, tracks, make(chan Req), make(chan Res) }
     return &v, nil
 }
 
@@ -60,4 +59,12 @@ func (v *View) UpdateStatusBar() {
 
     track.FillAt(string(v.mode), 1)
     track.FillAt(v.file, 8)
+}
+
+func (v *View) TrackCursor() Cursor {
+    width := v.width - v.lines.lnw
+
+    x := v.lines.lnw + (v.lines.cursor.x % width)
+    y := 0 + (v.lines.cursor.x / width)
+    return Cursor{ x, y }
 }

@@ -38,7 +38,7 @@ func (fe *FrontEnd) UpdateScreen() {
         fe.vw.tracks[i].Render(fe.screen, i)
     }
 
-    cursor := fe.vw.tcursor
+    cursor := fe.vw.TrackCursor()
     fe.screen.ShowCursor(cursor.x, cursor.y)
 
     fe.screen.Show()
