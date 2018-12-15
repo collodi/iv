@@ -3,13 +3,12 @@ package main
 import (
     "fmt"
     "container/list"
-    "github.com/gdamore/tcell"
 )
 
 type Line struct {
     num int
     text string
-    style StyleList
+    style *StyleList
 }
 
 func (ln *Line) Len() int {
@@ -19,22 +18,22 @@ func (ln *Line) Len() int {
 // lnw = line number width
 func (ln *Line) FillTracks(lnw int, tracks []Track) int {
     idx := 0
-    trknum := 0
+    trk := 0
 
     linenum := fmt.Sprintf("%*d", lnw - 1, ln.num)
-    bold := tcell.StyleDefault.Bold(true)
+    tracks[trk].Fill(linenum)
+    tracks[trk].style.InsertAt(0, lnw, StyleGray)
 
-    tracks[trknum].Fill(linenum, bold)
-    for trknum < len(tracks) {
-        tracks[trknum].FillAt(ln.text[idx:], lnw, 0)
-        idx += tracks[trknum].Len()
+    for trk < len(tracks) {
+        tracks[trk].FillAt(ln.text[idx:], lnw)
+        idx += tracks[trk].Len()
 
-        trknum++
+        trk++
         if idx >= ln.Len() {
             break
         }
     }
-    return trknum
+    return trk
 }
 
 type Lines struct {
@@ -53,16 +52,22 @@ func (lns *Lines) PushLine(line string) {
     lns.lnw = len(string(ln.num)) + 2
 }
 
-func (lns *Lines) FillTracks(tracks []Track) {
-    linenum := lns.cursor.y
-
-    // skip to the line
+func (lns *Lines) CurrElem() *list.Element {
     ln := lns.v.Front()
-    for i := 0; i < linenum; i++ {
+    for i := 0; i < lns.cursor.y; i++ {
         ln = ln.Next()
     }
+    return ln
+}
 
+func (lns *Lines) Jump(n int) {
+    y := lns.cursor.y + n
+    lns.cursor.y = Saturate(0, lns.v.Len() - 1, y)
+}
+
+func (lns *Lines) FillTracks(tracks []Track) {
     trknum := 0
+    ln := lns.CurrElem()
     for trknum < len(tracks) {
         line := ln.Value.(Line)
         trknum += line.FillTracks(lns.lnw, tracks[trknum:])

@@ -6,6 +6,8 @@ import (
 )
 
 func main() {
+    LogMe("=== main")
+
     fe, e := NewFrontEnd()
     if e != nil {
         fmt.Println("error creating a new frontend:", e)
@@ -21,11 +23,12 @@ func main() {
     }
 
     fe.SetView(vw)
-    go fe.ListenTo(vw.from)
-    go vw.Start()
+    go fe.ListenTo(vw.signal)
 
 loop:
     for {
+        fe.vw.Update()
+
         ev := fe.screen.PollEvent()
         switch ev := ev.(type) {
             case *tcell.EventKey:
@@ -33,6 +36,8 @@ loop:
                     k := ev.Rune()
                     if k == 'q' {
                         break loop
+                    } else if k == 'l' {
+                        fe.vw.Cmd("CursorX", 1)
                     }
                 }
         }

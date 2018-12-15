@@ -26,7 +26,7 @@ func (fe *FrontEnd) SetView(v *View) {
     fe.vw = v
 }
 
-func (fe *FrontEnd) ListenTo(ch chan Res) {
+func (fe *FrontEnd) ListenTo(ch chan int) {
     for _ = range ch {
         fe.UpdateScreen()
     }
@@ -40,7 +40,6 @@ func (fe *FrontEnd) UpdateScreen() {
 
     cursor := fe.vw.TrackCursor()
     fe.screen.ShowCursor(cursor.x, cursor.y)
-
     fe.screen.Show()
 }
 

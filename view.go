@@ -3,7 +3,7 @@ package main
 import (
     "os"
     "bufio"
-    "github.com/gdamore/tcell"
+    "reflect"
 )
 
 type View struct {
@@ -14,8 +14,7 @@ type View struct {
     lines Lines
     tracks []Track
 
-    to chan Req
-    from chan Res
+    signal chan int
 }
 
 func NewView(file string, w, h int) (*View, error) {
@@ -36,31 +35,25 @@ func NewView(file string, w, h int) (*View, error) {
         tracks[i] = NewTrack(w)
     }
 
-    v := View{ w, h, ModeNormal, file, lines, tracks, make(chan Req), make(chan Res) }
+    v := View{ w, h, ModeNormal, file, lines, tracks, make(chan int) }
     return &v, nil
 }
 
-func (v *View) Start() {
-    v.UpdateTracks()
-    v.from <- 0
-
-    for _ = range v.to {
-        v.UpdateTracks()
-        v.from <- 0
-    }
-}
-
-func (v *View) UpdateTracks() {
+func (v *View) Update() {
     v.lines.FillTracks(v.tracks[:v.height - 1])
     v.UpdateStatusBar()
+
+    v.signal <- 0
 }
 
 func (v *View) UpdateStatusBar() {
-    track := v.tracks[v.height - 1]
-    bold := tcell.StyleDefault.Bold(true)
+    track := &v.tracks[v.height - 1]
 
-    track.FillAt(string(v.mode), 1, 0)
-    track.FillAt(v.file, 8, bold)
+    track.style.InsertAt(0, 8, StyleBgDark)
+    track.style.ClearFrom(9)
+
+    track.FillAt(string(v.mode), 1)
+    track.FillAt(v.file, 9)
 }
 
 func (v *View) TrackCursor() Cursor {
@@ -69,4 +62,12 @@ func (v *View) TrackCursor() Cursor {
     x := v.lines.lnw + (v.lines.cursor.x % width)
     y := 0 + (v.lines.cursor.x / width)
     return Cursor{ x, y }
+}
+
+func (v *View) Cmd(name string, args ...interface{}) {
+    argvals := make([]reflect.Value, len(args))
+    for i, _ := range args {
+        argvals[i] = reflect.ValueOf(args[i])
+    }
+    reflect.ValueOf(v).MethodByName(name).Call(argvals)
 }

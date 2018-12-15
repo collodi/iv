@@ -6,7 +6,7 @@ import (
 
 type Track struct {
     text []rune
-    style StyleList
+    style *StyleList
 }
 
 func NewTrack(w int) Track {
@@ -17,21 +17,20 @@ func (t *Track) Len() int {
     return len(t.text)
 }
 
-func (t *Track) Fill(s string, style tcell.Style) {
-    t.FillAt(s, 0, style)
+func (t *Track) Fill(s string) {
+    t.FillAt(s, 0)
 }
 
-func (t *Track) FillAt(s string, idx int, style tcell.Style) {
+func (t *Track) FillAt(s string, idx int) {
     i := 0
     runes := []rune(s)
 
-    for idx + i < len(t.text) && i < len(s) {
+    for idx + i < t.Len() && i < len(s) {
         t.text[idx + i] = runes[i]
         i++
     }
 
-    t.style.PushBack(idx, i, style)
-    for idx + i < len(t.text) {
+    for idx + i < t.Len() {
         t.text[idx + i] = ' '
         i++
     }
@@ -40,7 +39,7 @@ func (t *Track) FillAt(s string, idx int, style tcell.Style) {
 func (t *Track) Render(screen tcell.Screen, y int) {
     st := t.style.Iterate()
     for x := 0; x < t.Len(); x++ {
-        screen.SetContent(x, y, t.text[x], nil, st.Step())
+        screen.SetContent(x, y, t.text[x], nil, st())
     }
 }
 
