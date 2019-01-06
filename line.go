@@ -22,14 +22,22 @@ func (ln *Line) FillTracks(lnw int, tracks []Track) int {
 
     linenum := fmt.Sprintf("%*d", lnw - 1, ln.num)
     tracks[trk].Fill(linenum)
-    tracks[trk].style.InsertAt(0, lnw, StyleGray)
 
+    llen := ln.Len()
+    tlen := tracks[trk].Len()
+
+    sarr := ln.style.ToArr(llen)
     for trk < len(tracks) {
+        s := Min(llen - idx, tlen)
+
         tracks[trk].FillAt(ln.text[idx:], lnw)
-        idx += tracks[trk].Len()
+        tracks[trk].style.FromArr(sarr[idx:idx+s])
+        tracks[trk].style.PushFront(0, lnw, StyleGray)
+
+        idx += tlen - lnw
 
         trk++
-        if idx >= ln.Len() {
+        if idx >= llen() {
             break
         }
     }

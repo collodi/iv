@@ -59,6 +59,15 @@ func (sl *StyleList) ClearFrom(i int) {
     }
 }
 
+func (sl *StyleList) PushFront(gap, size int, style tcell.Style) {
+    sl.v.PushFront(StyleSpan { gap, size, style })
+    sl.end += gap + size
+
+    el := sl.v.Front()
+    sp := el.Value.(StyleSpan)
+    sp.gap += gap + size
+}
+
 func (sl *StyleList) PushBack(gap, size int, style tcell.Style) {
     sl.v.PushBack(StyleSpan{ gap, size, style })
     sl.end += gap + size
